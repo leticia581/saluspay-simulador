@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SalusPay · Simulador de viabilidade</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Libre+Franklin:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#F5F5F1;--card:#fff;--ink:#1A1A1A;--soft:#5E604F;--line:rgba(0,0,0,.11);--lime:#D5DE45;--olive:#98A310;--carv:#343933;--areia:#C9C3A8;--neg:#A3402B;--pos:#3F6B1E;
+--serif:'Instrument Serif',Georgia,serif;--sans:'Libre Franklin',system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5}
+header{background:linear-gradient(155deg,#000,#343933);color:#fff;padding:22px max(16px,4vw) 18px}
+header .k{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--lime)}
+header h1{font-family:var(--serif);font-weight:400;font-size:clamp(28px,4vw,42px);margin:4px 0 4px}header h1 i{color:var(--lime)}
+header p{margin:0;color:rgba(255,255,255,.7);max-width:80ch}
+.cen{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+button{font:inherit;font-weight:600;font-size:13px;border-radius:999px;padding:7px 16px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer}
+button.on{background:var(--lime);border-color:var(--lime);color:#1A1A1A}
+main{display:grid;grid-template-columns:360px 1fr;gap:18px;padding:18px max(16px,4vw) 40px}
+@media(max-width:900px){main{grid-template-columns:1fr}}
+aside{display:flex;flex-direction:column;gap:12px}
+fieldset{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:10px 14px 12px;margin:0}
+legend{font-family:var(--serif);font-size:19px;padding:0 4px}
+.f{display:grid;grid-template-columns:1fr 104px;gap:8px;align-items:center;margin-top:7px}
+.f label{font-size:12.5px;color:var(--soft)}
+.f input{width:100%;font:inherit;font-size:13px;text-align:right;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:#FAFAF7}
+.f input:focus{outline:2px solid var(--olive)}
+input[type=range]{grid-column:1/-1;accent-color:var(--olive);width:100%;margin:0}
+section{min-width:0;display:flex;flex-direction:column;gap:14px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}@media(max-width:700px){.kpis{grid-template-columns:1fr 1fr}}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.kpi b{display:block;font-family:var(--serif);font-weight:400;font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12px;color:var(--soft)}
+.kpi.dark{background:linear-gradient(155deg,#000,#343933);border:0;color:#fff}.kpi.dark span{color:rgba(255,255,255,.65)}
+.pos{color:var(--pos)}.neg{color:var(--neg)}.kpi.dark .pos{color:var(--lime)}.kpi.dark .neg{color:#F0A08C}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
+.card h2{font-family:var(--serif);font-weight:400;font-size:22px;margin:0 0 6px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:1100px){.two{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+th{text-align:left;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--soft);padding:6px 8px;border-bottom:1.4px solid var(--carv)}
+td{padding:6px 8px;border-bottom:1px solid var(--line)}td.r,th.r{text-align:right}tr.t td{font-weight:700;border-top:1.3px solid var(--carv)}
+.chart svg{display:block;width:100%;height:auto}
+.leg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--soft)}.leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.alert{background:#FBF3E8;border-left:3px solid #D9902B;border-radius:10px;padding:9px 12px;font-size:13px}
+.ok{background:#F1F5E1;border-left:3px solid var(--olive);border-radius:10px;padding:9px 12px;font-size:13px}
+footer{padding:0 max(16px,4vw) 30px;font-size:12px;color:var(--soft)}
+</style></head><body>
+<header>
+ <div class="k">SalusPay · Grupo Iduna</div>
+ <h1>Simulador de <i>viabilidade</i></h1>
+ <p>Mexa em qualquer premissa e veja, na hora, a margem de cada frente, o resultado da SalusPay e o resultado do grupo. Valores mensais, em regime.</p>
+ <div class="cen" id="cen"><button data-c="Piloto">Piloto</button><button data-c="Base" class="on">Base</button><button data-c="Escala">Escala</button></div>
+</header>
+<main>
+<aside id="form"></aside>
+<section>
+ <div class="kpis" id="kpis"></div>
+ <div class="card chart"><h2>Margem de cada frente contra o custo fixo</h2><div id="chart"></div>
+  <div class="leg"><span><i style="background:#343933"></i>Lavanderias</span><span><i style="background:#98A310"></i>Antecipação na saúde</span><span><i style="background:#D5DE45"></i>Lucro bruto das vendas a mais (grupo)</span><span><i style="background:#A3402B"></i>Custo fixo</span></div></div>
+ <div id="msg"></div>
+ <div class="two">
+  <div class="card"><h2>Um contrato de parcelamento</h2><table id="tC"></table></div>
+  <div class="card"><h2>O mês, por frente</h2><table id="tM"></table></div>
+ </div>
+ <div class="card"><h2>Capital necessário</h2><table id="tK"></table></div>
+</section>
+</main>
+<footer>Premissas de trabalho do Sprint Finscale, a validar com a SalusPay. Taxas, limites e prazos são parâmetros da política de crédito. Nada do que é alterado aqui fica salvo.</footer>
+<script>
+const GROUPS=[
+ ["Parcelamento das lavanderias",[["ticket","Pedido médio parcelado (R$)",1559,500,5000,50],["n","Número de parcelas",3,2,6,1],["juro","Juro ao mês (%)",3.49,1.5,5,0.05],["desc","Desconto da Indústria (%)",2.5,0,5,0.1],["perda","Inadimplência (% do pedido)",2,0,8,0.1]]],
+ ["Volume das lavanderias",[["compras","Compras mensais das lavanderias (R$)",580000,50000,1000000,10000],["ades","Adesão ao parcelamento (%)",40,0,100,5],["elig","Valor em pedidos a partir de R$ 1.000 (%)",64,0,100,1]]],
+ ["Vender mais",[["upl","Aumento de compra (%)",10,0,30,1],["mb","Margem bruta da Indústria (%)",35.2,10,60,1]]],
+ ["Antecipação na saúde",[["svol","Antecipado por mês (R$)",2000000,0,15000000,100000],["stx","Taxa ao mês (%)",2.5,1,5,0.05],["sprazo","Prazo médio (dias)",30,10,120,5],["sperda","Perda (% do antecipado)",0.2,0,3,0.05]]],
+ ["Capital e custos",[["inv","Retorno do investidor ao mês (%)",1.25,0.8,2.5,0.05],["cdi","CDI ao mês (%)",1.07,0.5,1.5,0.01],["ccb","Bancarização por CCB (%)",0.6,0,2,0.05],["op","Operação por pedido (%)",0.5,0,2,0.05],["pis","PIS/COFINS (%)",9.25,0,15,0.05],["estr","Estrutura: tecnologia, IA e securitizadora (R$)",25000,0,60000,500],["equipe","Equipe própria (R$)",8500,0,40000,500],["holding","Capital da holding (R$)",1000000,0,5000000,50000]]]
+];
+const CEN={Piloto:{compras:157000,ades:50,elig:90,upl:0,svol:0},Base:{compras:580000,ades:40,elig:64,upl:10,svol:2000000},Escala:{compras:580000,ades:40,elig:64,upl:15,svol:5000000}};
+const DEF={};GROUPS.forEach(g=>g[1].forEach(f=>DEF[f[0]]=f[2]));
+let P={...DEF,...CEN.Base};
+const form=document.getElementById('form');
+form.innerHTML=GROUPS.map(([t,fs])=>`<fieldset><legend>${t}</legend>${fs.map(([k,l,d,mn,mx,st])=>`<div class="f"><label for="${k}">${l}</label><input id="${k}" type="number" step="${st}" value="${d}"><input type="range" id="${k}_r" min="${mn}" max="${mx}" step="${st}" value="${d}" aria-label="${l}"></div>`).join('')}</fieldset>`).join('');
+function setUI(){for(const k in P){const a=document.getElementById(k),b=document.getElementById(k+'_r');if(a){a.value=P[k];b.value=P[k]}}}
+form.addEventListener('input',e=>{const id=e.target.id.replace('_r','');P[id]=parseFloat(e.target.value)||0;const o=e.target.id.endsWith('_r')?document.getElementById(id):document.getElementById(id+'_r');if(o)o.value=P[id];calc()});
+document.querySelectorAll('#cen button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#cen button').forEach(x=>x.classList.toggle('on',x===b));P={...DEF,...CEN[b.dataset.c]};setUI();calc()});
+const R=v=>(v<0?'−':'')+'R$ '+Math.abs(Math.round(v)).toLocaleString('pt-BR');
+const RK=v=>(v<0?'−':'')+'R$ '+(Math.abs(v)/1000).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+' mil';
+const RM=v=>'R$ '+(v/1e6).toLocaleString('pt-BR',{maximumFractionDigits:2})+' mi';
+const cls=v=>v<0?'neg':'pos';
+function calc(){
+ const p=P,pc=x=>x/100,T=p.ticket,vida=(p.n+1)/2,cap=T*vida;
+ const juro=cap*pc(p.juro),desc=T*pc(p.desc)*28/30,rec=juro+desc,imp=rec*pc(p.pis),inv=cap*pc(p.inv),perda=T*pc(p.perda),op=T*pc(p.op),ccb=T*pc(p.ccb);
+ const mS=rec-imp-inv-perda-op-ccb, mG=mS+inv, cdi=cap*pc(p.cdi);
+ const parc=p.compras*pc(p.ades)*pc(p.elig), n=parc/T, lav=n*mS, invHold=n*inv;
+ const f=p.sprazo/30, s1=v=>v*pc(p.stx)*f*(1-pc(p.pis))-v*pc(p.inv)*f-v*pc(p.sperda)-v*0.001;
+ const sau=s1(p.svol), vend=p.compras*pc(p.upl)*pc(p.mb), fixo=p.estr+p.equipe;
+ const resS=lav+sau-fixo, resG=resS+vend+invHold;
+ const per1=s1(1e6), be=per1>0?Math.max(0,(fixo-lav)/per1*1e6):Infinity;
+ const capLav=n*cap, capSau=p.svol*f, capTot=capLav+capSau, ext=Math.max(0,capTot-p.holding);
+ document.getElementById('kpis').innerHTML=[
+  ['Resultado SalusPay',RK(resS),'por mês',resS,0],['Resultado do grupo',RK(resG),'com vendas a mais',resG,1],
+  ['Margem por contrato',R(mS),'SalusPay; grupo '+R(mG),mS,0],['Saúde para empatar',isFinite(be)?RM(be):'não empata','antecipado por mês',null,0]
+ ].map(([t,v,s,val,d])=>`<div class="kpi ${d?'dark':''}"><span>${t}</span><b class="${val==null?'':cls(val)}">${v}</b><span>${s}</span></div>`).join('');
+ // gráfico
+ const vals=[['Lavanderias',lav,'#343933'],['Saúde',sau,'#98A310'],['Vendas a mais',vend,'#D5DE45']];
+ const tot=vals.reduce((s,x)=>s+Math.max(0,x[1]),0);const mx=Math.max(fixo,tot)*1.15||1;
+ const W=700,H=120,l=10,r=W-10,x=v=>l+(v/mx)*(r-l);let acc=0,g=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Margem por frente contra custo fixo">`;
+ g+=`<text x="${l}" y="18" font-size="12" fill="#5E604F">Receita líquida das frentes</text>`;
+ vals.forEach(([nm,v,c])=>{if(v>0){g+=`<rect x="${x(acc)}" y="26" width="${x(acc+v)-x(acc)}" height="34" fill="${c}"/>`;if(x(acc+v)-x(acc)>70)g+=`<text x="${(x(acc)+x(acc+v))/2}" y="48" text-anchor="middle" font-size="12" font-weight="700" fill="${c==='#D5DE45'?'#1A1A1A':'#fff'}">${RK(v)}</text>`;acc+=v}});
+ g+=`<text x="${l}" y="84" font-size="12" fill="#5E604F">Custo fixo</text><rect x="${l}" y="90" width="${x(fixo)-l}" height="22" fill="#A3402B" opacity=".85"/><text x="${x(fixo)+6}" y="106" font-size="12" font-weight="700" fill="#A3402B">${RK(fixo)}</text>`;
+ g+=`<line x1="${x(fixo)}" y1="22" x2="${x(fixo)}" y2="${H}" stroke="#A3402B" stroke-dasharray="4 3"/></svg>`;
+ document.getElementById('chart').innerHTML=g;
+ const covS=lav+sau, msg=document.getElementById('msg');
+ msg.innerHTML= covS>=fixo?`<div class="ok"><b>A SalusPay se paga.</b> As frentes financeiras cobrem o custo fixo com folga de ${RK(covS-fixo)} por mês.</div>`:
+  resG>=0?`<div class="ok"><b>O grupo ganha, a SalusPay ainda não.</b> Faltam ${RK(fixo-covS)} por mês na SalusPay; as vendas a mais da Indústria cobrem a diferença.</div>`:
+  `<div class="alert"><b>Ainda não fecha.</b> Faltam ${RK(-resG)} por mês no grupo. Antecipar ${isFinite(be)?RM(be):'mais'} por mês na saúde fecha a conta da SalusPay.</div>`;
+ const row=(a,b,c,t)=>`<tr class="${t||''}"><td>${a}</td><td>${b}</td><td class="r">${c}</td></tr>`;
+ document.getElementById('tC').innerHTML='<thead><tr><th>Linha</th><th>Base</th><th class="r">R$</th></tr></thead><tbody>'+
+  row('Juro da lavanderia',p.juro+'% a.m. sobre o saldo','+'+R(juro))+row('Desconto da Indústria',p.desc+'% do pedido','+'+R(desc))+row('Imposto',p.pis+'% da receita','−'+R(imp))+row('Investidor',p.inv+'% a.m. sobre o saldo','−'+R(inv))+row('Inadimplência',p.perda+'% do pedido','−'+R(perda))+row('Operação e CCB',(p.op+p.ccb).toFixed(2)+'% do pedido','−'+R(op+ccb))+
+  row('Margem SalusPay','',R(mS),'t')+row('Ganho do grupo','investidor fica na holding',R(mG),'t')+row('Ganho do grupo acima do CDI','',R(mG-cdi))+'</tbody>';
+ document.getElementById('tM').innerHTML='<thead><tr><th>Frente</th><th>Volume</th><th class="r">R$/mês</th></tr></thead><tbody>'+
+  row('Lavanderias',`${Math.round(n)} contratos, ${RK(parc)}`,R(lav))+row('Saúde',`${RM(p.svol)} antecipados`,R(sau))+row('Custo fixo','estrutura + equipe','−'+R(fixo))+
+  row('Resultado SalusPay','',`<span class="${cls(resS)}">${R(resS)}</span>`,'t')+row('Vendas a mais','lucro bruto da Indústria',R(vend))+row('Retorno da holding','fica no grupo',R(invHold))+
+  row('Resultado do grupo','',`<span class="${cls(resG)}">${R(resG)}</span>`,'t')+'</tbody>';
+ document.getElementById('tK').innerHTML='<thead><tr><th>Uso</th><th>Como se calcula</th><th class="r">R$</th></tr></thead><tbody>'+
+  row('Lavanderias','contratos do mês × saldo médio',R(capLav))+row('Saúde','antecipado × prazo',R(capSau))+row('Total na rua','',R(capTot),'t')+row('Capital da holding','',R(p.holding))+
+  row('Investidor externo necessário','',`<span class="${ext>0?'neg':'pos'}">${R(ext)}</span>`,'t')+'</tbody>';
+}
+setUI();calc();
+</script></body></html>
