@@ -94,7 +94,7 @@ body{background:#fff;color:var(--ink);padding-block:0 40px;padding-left:max(16px
  .panel{max-height:none;overflow:visible}
 }
 </style>
-<style>@media(max-width:1100px){#cards,#leit{grid-template-columns:1fr 1fr!important}}@media(max-width:700px){#cards,#leit{grid-template-columns:1fr!important}}</style>
+<style>@media(max-width:1100px){#cards,#leit{grid-template-columns:1fr 1fr!important}}@media(max-width:700px){#cards,#leit,#rec{grid-template-columns:1fr!important}}.ideal p b{font-weight:700}</style>
 <header class="top"><svg class="lg"  viewBox="0 0 1218 292" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#clip0_120_13)">
 <path d="M366.939 257.613V251.218L376.171 247.439C383.741 244.13 385.636 241.529 385.636 234.428V118.732C385.636 111.632 383.741 108.794 376.171 105.721L366.939 101.942V95.548H490.441L493.043 133.874H486.649L479.314 122.04C471.272 109.5 468.435 107.604 457.555 107.604H410.482V173.376H446.676C453.776 173.376 456.613 171.246 459.686 163.909L463.701 154.455H469.847V206.262H463.701L459.921 196.09C456.613 187.564 453.776 185.446 446.676 185.446H410.482V234.415C410.482 240.809 412.612 243.399 421.125 246.955L431.769 251.218V257.613H366.939Z" fill="currentColor"/>
@@ -137,10 +137,12 @@ body{background:#fff;color:var(--ink);padding-block:0 40px;padding-left:max(16px
   <label for="cdin">Retorno pago à holding (% a.m.)</label><input id="cdin" class="dec" type="text" inputmode="decimal" value="1,25">
   <div class="hint">A holding coloca o dinheiro que paga a Indústria e recebe esse retorno até a lavanderia quitar.</div>
   <h3>Premissas de mercado</h3>
-  <label for="cdi">CDI (% a.a.)</label><input id="cdi" class="dec" type="text" inputmode="decimal" value="13,65">
-  <div class="hint">CDI de novembro de 2026. Selic meta 13,75%.</div>
-  <label for="ipca">Inflação (IPCA 12 meses, %)</label><input id="ipca" class="dec" type="text" inputmode="decimal" value="4,63">
-  <div class="hint">Tira a inflação do ganho para mostrar quanto ele vale em dinheiro de hoje.</div>
+  <label for="cdi">CDI (% a.a.)</label><input id="cdi" class="dec" type="text" inputmode="decimal" value="13,65" readonly style="background:#e4e4da;color:#6E6F57">
+  <div class="hint">Dado público: CDI de novembro de 2026 (Banco Central). Selic meta 13,75%.</div>
+  <h3>Para o ganho real</h3>
+  <label for="ipca">Inflação (IPCA 12 meses, %)</label><input id="ipca" class="dec" type="text" inputmode="decimal" value="4,63" readonly style="background:#e4e4da;color:#6E6F57">
+  <div class="hint">Dado público: IPCA acumulado até outubro de 2026 (IBGE). Tira a inflação do ganho para mostrar quanto ele vale em dinheiro de hoje.</div>
+  <button id="btnSalvar" type="button">Salvar simulação</button><div class="salvas" id="salvas"></div>
 </div>
 <div>
  <div class="tabs noprint"><button class="tb on" id="t1b" type="button">Simulador</button><button class="tb" id="t2b" type="button">Como funciona: o dinheiro e a receita de cada parte</button></div>
@@ -148,14 +150,20 @@ body{background:#fff;color:var(--ink);padding-block:0 40px;padding-left:max(16px
   <div class="hero" id="sug" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr"></div>
   <h2>Quanto fica com cada um</h2>
   <div class="cards" id="cards" style="grid-template-columns:repeat(4,1fr)"></div>
+  <h2>A receita de cada um</h2>
+  <div class="cards" id="rec" style="grid-template-columns:repeat(3,1fr)"></div>
   <h2>O custo do capital, parte por parte</h2>
   <div class="sx" id="custo"></div>
   <h2>Escolha o prazo</h2>
   <div class="sx"><table class="prz" id="tab"></table></div>
   <p class="hint" style="margin-top:8px">Em verde, o menor prazo com parcela dentro da faixa. Clique em outra linha para comparar.</p>
+  <h2>Leitura da operação</h2>
+  <div class="leit" id="leit" style="grid-template-columns:repeat(4,1fr)"></div>
+  <div class="ideal"><h4>Onde o dinheiro deve ficar</h4><div id="onde"></div></div>
+  <h2>Mês a mês</h2>
+  <div class="sx"><table class="prz" id="mes"></table></div>
  </div>
  <div id="t2" hidden>
-  <div class="leit" id="leit" style="grid-template-columns:repeat(4,1fr)"></div>
   <div class="ideal"><h4>Como o dinheiro anda</h4>
    <p>1. A holding coloca o dinheiro na SalusPay, contrato a contrato. 2. A lavanderia assina a CCB e a SalusPay paga a Indústria à vista, com desconto. 3. A lavanderia paga as parcelas à SalusPay. 4. A SalusPay devolve o dinheiro à holding com o retorno combinado e fica com a diferença.</p>
    <p>Dentro do grupo, o desconto da Indústria e o retorno da holding só trocam de bolso. O que entra de fora são os juros da lavanderia; o que sai é a emissão da CCB e o risco de inadimplência.</p>
@@ -226,12 +234,29 @@ function calc(){
   ['Indústria',`Recebe ${R(c.ind)} no dia, sem cobrar e sem risco de atraso.`,`Paga ${R(c.descv)} de desconto. Hoje, dar 28 dias custa ${R(c.hoje)} a CDI, sem contar o atraso.`],
   ['Holding',`Recebe ${PC(p.cdin)}% ao mês, ${R(c.holdX)} acima do CDI neste pedido.`,'O dinheiro fica aplicado até a lavanderia quitar e corre o risco da carteira.'],
   ['SalusPay',`Fica com ${R(c.fica)} neste pedido.`,'Paga a holding e a CCB, e carrega a cobrança e a inadimplência.']
- ].map(([t,g,a])=>`<div class="lc"><h4>${t}</h4><div class="g"><b class="t">Ganha</b>${g}</div><div class="p"><b class="t">Atenção</b>${a}</div></div>`).join('');
+ ].map(([t,g,a])=>`<div class="lc"><h4>${t}</h4><div class="g"><b class="t">Ganha</b>${g}</div><div class="p"><b class="t">Abre mão</b>${a}</div></div>`).join('');
+
+ const ip=Math.pow(1+p.ipca/100,1/12)-1;
+ $('rec').innerHTML=`<div class="card"><h4>Receita da Indústria</h4><div class="big">${R(c.ind)}</div><div class="cap">no dia do pedido</div><table><tr><td>Hoje: recebe em 28 dias</td><td>${R(p.v)}</td></tr><tr><td>Hoje: o prazo custa, a CDI</td><td class="neg">${R(-c.hoje)}</td></tr><tr><td>Com a SalusPay: desconto</td><td class="neg">${R(-c.descv)}</td></tr><tr class="tot"><td>Recebe à vista, sem risco</td><td>${R(c.ind)}</td></tr></table></div>
+ <div class="card hi"><h4>Receita da SalusPay</h4><div class="big">${R(c.jur+c.descv)}</div><div class="cap">receita bruta do pedido</div><table><tr><td>Juros da lavanderia</td><td>${R(c.jur)}</td></tr><tr><td>Desconto da Indústria</td><td>${R(c.descv)}</td></tr><tr><td>Retorno pago à holding</td><td class="neg">${R(-c.custo)}</td></tr><tr><td>Emissão da CCB</td><td class="neg">${R(-c.ccb)}</td></tr><tr class="tot"><td>Resultado</td><td>${R(c.fica)}</td></tr><tr><td>Ganho real, sem a inflação</td><td>${R(c.real)}</td></tr></table></div>
+ <div class="card"><h4>Receita do grupo</h4><div class="big">${R(c.grupo)}</div><div class="cap">Indústria, holding e SalusPay somadas</div><table><tr><td>Juros da lavanderia</td><td>${R(c.jur)}</td></tr><tr><td>Emissão da CCB</td><td class="neg">${R(-c.ccb)}</td></tr><tr><td>CDI do dinheiro do grupo</td><td class="neg">${R(-(c.jur-c.ccb+c.hoje-c.grupo))}</td></tr><tr><td>Fim dos 28 dias de graça</td><td>${R(c.hoje)}</td></tr><tr class="tot"><td>Ganho do grupo</td><td>${R(c.grupo)}</td></tr></table></div>`;
+ $('onde').innerHTML=`<p><b style="color:#D5DE45">À vista, sempre, com o dinheiro da holding.</b> A Indústria recebe ${R(c.ind)} no dia e deixa de cobrar e de carregar o risco. O desconto de ${R(c.descv)} sai da Indústria e entra na SalusPay; o retorno de ${R(c.custo)} sai da SalusPay e entra na holding. Para o grupo, os dois só trocam de bolso.</p><p>O que muda o resultado do grupo é o juro da lavanderia contra o custo do dinheiro: ${PC(p.tj)}% ao mês contra ${PC(c.cdim*100)}% do CDI. Neste pedido, o grupo ganha ${R(c.grupo)}.</p><p><b style="color:#D5DE45">A confirmar com o contador.</b> Na SalusPay, o juro e o desconto são receita financeira: PIS/COFINS de 4,65% e IRPJ/CSLL sobre o lucro. O prejuízo da SalusPay não compensa o lucro da Indústria.</p>`;
+ {let bal=c.ind,hb=0;const r=p.cdin/100;let rows='';let tL=0,tH=0,tS=0;
+  for(let k=1;k<=c.n;k++){const juroH=bal*r;let paga=Math.min(c.pmt,bal+juroH);bal=bal+juroH-paga;const sal=c.pmt-paga;tL+=c.pmt;tH+=paga;tS+=sal;
+   rows+=`<tr><td>Mês ${k}</td><td>${R(c.pmt)}</td><td>—</td><td>${R(paga)}</td><td>${R(sal)}</td></tr>`}
+  tS-=c.ccb;
+  $('mes').innerHTML=`<thead><tr><th>Mês</th><th>Lavanderia paga</th><th>Indústria recebe</th><th>Volta para a holding</th><th>Fica na SalusPay</th></tr></thead><tbody><tr><td>Dia 0</td><td>—</td><td>${R(c.ind)}</td><td>${R(-c.ind)} (aporte)</td><td>${R(-c.ccb)} (emissão da CCB)</td></tr>${rows}<tr class="sug"><td>Total</td><td>${R(tL)}</td><td>${R(c.ind)}</td><td>${R(tH-c.ind)} de retorno</td><td>${R(tS)}</td></tr></tbody>`;}
  $('regras').innerHTML=`<b>Como calculamos.</b> <span><b>Parcela.</b> Tabela Price: o pedido de ${R(p.v)} vira ${c.n} parcelas fixas de ${R(c.pmt)}, com juros de ${PC(p.tj)}% ao mês.</span> <span><b>Prazo sugerido.</b> O menor prazo, de 1 a ${p.nmax} meses, em que a parcela cabe entre ${R(p.pmin)} e ${R(p.pmax)}.</span> <span><b>Holding.</b> Coloca ${R(c.ind)} no dia e recebe ${PC(p.cdin)}% ao mês sobre o saldo até a última parcela: ${R(c.custo)}. No CDI, o mesmo dinheiro renderia ${R(c.cdiH)}.</span> <span><b>Bancarização.</b> ${PC(p.ccb)}% do pedido, uma vez: ${R(c.ccb)}.</span> <span><b>Ganho do grupo.</b> Juros da lavanderia, menos CCB, menos o CDI do dinheiro do grupo durante o prazo, mais o custo dos 28 dias que hoje a Indústria dá de graça.</span> <span><b>Fora da conta.</b> Custos fixos, impostos e inadimplência.</span>`;
 }
 document.querySelectorAll('.panel input,.panel select').forEach(e=>e.addEventListener('input',()=>{sel=null;calc()}));
 $('t1b').onclick=()=>{$('t1').hidden=false;$('t2').hidden=true;$('t1b').classList.add('on');$('t2b').classList.remove('on')};
 $('t2b').onclick=()=>{$('t1').hidden=true;$('t2').hidden=false;$('t2b').classList.add('on');$('t1b').classList.remove('on')};
+
+const KEY='saluspay_sims';
+function lerSalvas(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return []}}
+function mostrarSalvas(){const l=lerSalvas();$('salvas').innerHTML=l.map((x,i)=>`<button type="button" data-i="${i}">${x.nome}</button>`).join('');$('salvas').querySelectorAll('button').forEach(b=>b.onclick=()=>{const x=lerSalvas()[+b.dataset.i];Object.keys(x.v).forEach(k=>{if($(k))$(k).value=x.v[k]});sel=null;calc()})}
+$('btnSalvar').onclick=()=>{const v={};['v','tj','pmin','pmax','nmax','desc','cdin'].forEach(k=>v[k]=$(k).value);const nome=`${v.v} · ${v.tj}% · ${new Date().toLocaleDateString('pt-BR')}`;try{const l=lerSalvas();l.unshift({nome,v});localStorage.setItem(KEY,JSON.stringify(l.slice(0,8)))}catch(e){}mostrarSalvas()};
+mostrarSalvas();
 calc();
 </script>
 </body></html>
