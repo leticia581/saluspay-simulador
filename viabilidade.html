@@ -59,6 +59,7 @@ footer{padding:0 max(16px,4vw) 30px;font-size:12px;color:var(--soft)}
   <div class="card"><h2>Um contrato de parcelamento</h2><table id="tC"></table></div>
   <div class="card"><h2>O mês, por frente</h2><table id="tM"></table></div>
  </div>
+ <div class="card chart"><h2>Projeção de 24 meses</h2><div id="proj"></div><div class="leg"><span><i style="background:#C9C3A8"></i>Resultado do mês, SalusPay</span><span><i style="background:#343933"></i>Acumulado SalusPay</span><span><i style="background:#98A310"></i>Acumulado do grupo</span></div><table id="tP" style="margin-top:8px"></table></div>
  <div class="card"><h2>Capital necessário</h2><table id="tK"></table></div>
 </section>
 </main>
@@ -68,8 +69,8 @@ const GROUPS=[
  ["Parcelamento das lavanderias",[["ticket","Pedido médio parcelado (R$)",1559,500,5000,50],["n","Número de parcelas",3,2,6,1],["juro","Juro ao mês (%)",3.49,1.5,5,0.05],["desc","Desconto da Indústria (%)",2.5,0,5,0.1],["perda","Inadimplência (% do pedido)",2,0,8,0.1]]],
  ["Volume das lavanderias",[["compras","Compras mensais das lavanderias (R$)",580000,50000,1000000,10000],["ades","Adesão ao parcelamento (%)",40,0,100,5],["elig","Valor em pedidos a partir de R$ 1.000 (%)",64,0,100,1]]],
  ["Vender mais",[["upl","Aumento de compra (%)",10,0,30,1],["mb","Margem bruta da Indústria (%)",35.2,10,60,1]]],
- ["Antecipação na saúde",[["svol","Antecipado por mês (R$)",2000000,0,15000000,100000],["stx","Taxa ao mês (%)",2.5,1,5,0.05],["sprazo","Prazo médio (dias)",30,10,120,5],["sperda","Perda (% do antecipado)",0.2,0,3,0.05]]],
- ["Capital e custos",[["inv","Retorno do investidor ao mês (%)",1.25,0.8,2.5,0.05],["cdi","CDI ao mês (%)",1.07,0.5,1.5,0.01],["ccb","Bancarização por CCB (%)",0.6,0,2,0.05],["op","Operação por pedido (%)",0.5,0,2,0.05],["pis","PIS/COFINS (%)",9.25,0,15,0.05],["estr","Estrutura: tecnologia, IA e securitizadora (R$)",25000,0,60000,500],["equipe","Equipe própria (R$)",8500,0,40000,500],["holding","Capital da holding (R$)",1000000,0,5000000,50000]]]
+ ["Antecipação na saúde",[["svol","Antecipado por mês (R$)",2000000,0,15000000,100000],["stx","Taxa ao mês (%)",2.5,1,5,0.05],["sprazo","Prazo médio (dias)",30,10,120,5],["sperda","Perda (% do antecipado)",0.2,0,3,0.05],["sini","Mês de início da saúde",5,1,24,1],["srampa","Meses até o volume cheio",12,1,24,1]]],
+ ["Capital e custos",[["inv","Retorno do investidor ao mês (%)",1.25,0.8,2.5,0.05],["cdi","CDI ao mês (%)",1.07,0.5,1.5,0.01],["ccb","Bancarização por CCB (%)",0.6,0,2,0.05],["opf","Assinatura e consulta por contrato (R$)",7,0,30,1],["opp","Boleto ou Pix por parcela (R$)",2,0,10,0.5],["pis","PIS/COFINS sobre receita financeira (%)",4.65,0,15,0.05],["estr","Estrutura: tecnologia, IA e securitizadora (R$)",25000,0,60000,500],["equipe","Equipe própria (R$)",8500,0,40000,500],["holding","Capital da holding (R$)",1000000,0,5000000,50000]]]
 ];
 const CEN={Piloto:{compras:157000,ades:50,elig:90,upl:0,svol:0},Base:{compras:580000,ades:40,elig:64,upl:10,svol:2000000},Escala:{compras:580000,ades:40,elig:64,upl:15,svol:5000000}};
 const DEF={};GROUPS.forEach(g=>g[1].forEach(f=>DEF[f[0]]=f[2]));
@@ -85,8 +86,8 @@ const RM=v=>'R$ '+(v/1e6).toLocaleString('pt-BR',{maximumFractionDigits:2})+' mi
 const cls=v=>v<0?'neg':'pos';
 function calc(){
  const p=P,pc=x=>x/100,T=p.ticket,vida=(p.n+1)/2,cap=T*vida;
- const juro=cap*pc(p.juro),desc=T*pc(p.desc)*28/30,rec=juro+desc,imp=rec*pc(p.pis),inv=cap*pc(p.inv),perda=T*pc(p.perda),op=T*pc(p.op),ccb=T*pc(p.ccb);
- const mS=rec-imp-inv-perda-op-ccb, mG=mS+inv, cdi=cap*pc(p.cdi);
+ const juro=cap*pc(p.juro),desc=T*pc(p.desc)*28/30,rec=juro+desc,imp=rec*pc(p.pis),inv=cap*pc(p.inv),perda=T*pc(p.perda),op=p.opf+p.opp*p.n,ccb=T*pc(p.ccb);
+ const iof=Array.from({length:p.n},(_,k)=>T/p.n*0.000082*30*(k+1)).reduce((a,b)=>a+b,0)+T*0.0038;const mS=rec-imp-inv-perda-op-ccb, mG=mS+inv, cdi=cap*pc(p.cdi);
  const parc=p.compras*pc(p.ades)*pc(p.elig), n=parc/T, lav=n*mS, invHold=n*inv;
  const f=p.sprazo/30, s1=v=>v*pc(p.stx)*f*(1-pc(p.pis))-v*pc(p.inv)*f-v*pc(p.sperda)-v*0.001;
  const sau=s1(p.svol), vend=p.compras*pc(p.upl)*pc(p.mb), fixo=p.estr+p.equipe;
@@ -112,12 +113,30 @@ function calc(){
   `<div class="alert"><b>Ainda não fecha.</b> Faltam ${RK(-resG)} por mês no grupo. Antecipar ${isFinite(be)?RM(be):'mais'} por mês na saúde fecha a conta da SalusPay.</div>`;
  const row=(a,b,c,t)=>`<tr class="${t||''}"><td>${a}</td><td>${b}</td><td class="r">${c}</td></tr>`;
  document.getElementById('tC').innerHTML='<thead><tr><th>Linha</th><th>Base</th><th class="r">R$</th></tr></thead><tbody>'+
-  row('Juro da lavanderia',p.juro+'% a.m. sobre o saldo','+'+R(juro))+row('Desconto da Indústria',p.desc+'% do pedido','+'+R(desc))+row('Imposto',p.pis+'% da receita','−'+R(imp))+row('Investidor',p.inv+'% a.m. sobre o saldo','−'+R(inv))+row('Inadimplência',p.perda+'% do pedido','−'+R(perda))+row('Operação e CCB',(p.op+p.ccb).toFixed(2)+'% do pedido','−'+R(op+ccb))+
+  row('Juro da lavanderia',p.juro+'% a.m. sobre o saldo','+'+R(juro))+row('Desconto da Indústria',p.desc+'% do pedido','+'+R(desc))+row('Imposto',p.pis+'% da receita','−'+R(imp))+row('Investidor',p.inv+'% a.m. sobre o saldo','−'+R(inv))+row('Inadimplência',p.perda+'% do pedido','−'+R(perda))+row('Operação e CCB','R$ '+p.opf+' + R$ '+p.opp+'/parcela + '+p.ccb+'%','−'+R(op+ccb))+row('IOF da lavanderia (fora da margem)','0,0082%/dia + 0,38%',R(iof))+
   row('Margem SalusPay','',R(mS),'t')+row('Ganho do grupo','investidor fica na holding',R(mG),'t')+row('Ganho do grupo acima do CDI','',R(mG-cdi))+'</tbody>';
  document.getElementById('tM').innerHTML='<thead><tr><th>Frente</th><th>Volume</th><th class="r">R$/mês</th></tr></thead><tbody>'+
   row('Lavanderias',`${Math.round(n)} contratos, ${RK(parc)}`,R(lav))+row('Saúde',`${RM(p.svol)} antecipados`,R(sau))+row('Custo fixo','estrutura + equipe','−'+R(fixo))+
   row('Resultado SalusPay','',`<span class="${cls(resS)}">${R(resS)}</span>`,'t')+row('Vendas a mais','lucro bruto da Indústria',R(vend))+row('Retorno da holding','fica no grupo',R(invHold))+
   row('Resultado do grupo','',`<span class="${cls(resG)}">${R(resG)}</span>`,'t')+'</tbody>';
+
+ // projeção 24 meses: lavanderias em 9 meses de rampa, saúde a partir de sini em srampa meses; IR 34% com compensação de 30%
+ let cum=0,gcum=0,cf=0,rows=[];
+ for(let m=1;m<=24;m++){const fl=Math.min(1,m/9),fs=m<p.sini?0:Math.min(1,(m-p.sini+1)/p.srampa);
+  const L=lav*fl,Sa=sau*fs,eb=L+Sa-fixo;let tax=0;if(eb>0){const c=Math.min(cf,eb*.3);cf-=c;tax=(eb-c)*.34}else cf+=-eb;
+  const res=eb-tax;cum+=res;const g=res+vend*fl+invHold*fl;gcum+=g;rows.push({m,res,cum,g,gcum})}
+ const wst=rows.reduce((a,b)=>b.cum<a.cum?b:a),gw=rows.reduce((a,b)=>b.gcum<a.gcum?b:a),be1=rows.find(r=>r.res>=0),gpb=rows.find(r=>r.gcum>=0&&r.m>1),pb=rows.find(r=>r.cum>=0&&r.m>1);
+ {const W=700,H=240,l=60,r=690,t=12,b=210,mn=Math.min(wst.cum,gw.gcum,0),mx=Math.max(rows[23].gcum,rows[23].cum,1e4);
+  const y=v=>t+(mx-v)/(mx-mn)*(b-t),xx=i=>l+(i+.5)*(r-l)/24,bw=(r-l)/24*.55;
+  let g=`<svg viewBox="0 0 ${W} ${H}"><line x1="${l}" y1="${y(0)}" x2="${r}" y2="${y(0)}" stroke="#5E604F"/>`;
+  [mn,mx].forEach(v=>g+=`<text x="${l-6}" y="${y(v)+4}" text-anchor="end" font-size="10" fill="#5E604F">${Math.round(v/1000)} mil</text>`);
+  rows.forEach((x,i)=>{g+=`<rect x="${xx(i)-bw/2}" y="${Math.min(y(x.res),y(0))}" width="${bw}" height="${Math.max(1,Math.abs(y(x.res)-y(0)))}" fill="${x.res<0?'#C9C3A8':'#D5DE45'}"/>`;if(i%3==0)g+=`<text x="${xx(i)}" y="${b+16}" text-anchor="middle" font-size="10" fill="#5E604F">M${x.m}</text>`});
+  g+=`<polyline fill="none" stroke="#343933" stroke-width="2.4" points="${rows.map((x,i)=>xx(i)+','+y(x.cum)).join(' ')}"/><polyline fill="none" stroke="#98A310" stroke-width="2.4" stroke-dasharray="6 4" points="${rows.map((x,i)=>xx(i)+','+y(x.gcum)).join(' ')}"/>`;
+  g+=`<circle cx="${xx(wst.m-1)}" cy="${y(wst.cum)}" r="5" fill="#A3402B"/></svg>`;document.getElementById('proj').innerHTML=g}
+ document.getElementById('tP').innerHTML='<thead><tr><th>Marco</th><th>SalusPay</th><th class="r">Grupo</th></tr></thead><tbody>'+
+  `<tr><td>Primeiro mês positivo</td><td>${be1?'mês '+be1.m:'não chega em 24 meses'}</td><td class="r">${(rows.find(r=>r.g>=0)||{}).m?'mês '+rows.find(r=>r.g>=0).m:'—'}</td></tr>`+
+  `<tr><td>Pior mês de caixa</td><td>mês ${wst.m}: ${RK(wst.cum)}</td><td class="r">mês ${gw.m}: ${RK(gw.gcum)}</td></tr>`+
+  `<tr><td>Acumulado volta ao zero</td><td>${pb?'mês '+pb.m:'depois do mês 24'}</td><td class="r">${gpb?'mês '+gpb.m:'depois do mês 24'}</td></tr></tbody>`;
  document.getElementById('tK').innerHTML='<thead><tr><th>Uso</th><th>Como se calcula</th><th class="r">R$</th></tr></thead><tbody>'+
   row('Lavanderias','contratos do mês × saldo médio',R(capLav))+row('Saúde','antecipado × prazo',R(capSau))+row('Total na rua','',R(capTot),'t')+row('Capital da holding','',R(p.holding))+
   row('Investidor externo necessário','',`<span class="${ext>0?'neg':'pos'}">${R(ext)}</span>`,'t')+'</tbody>';
