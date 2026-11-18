@@ -94,7 +94,7 @@ body{background:#fff;color:var(--ink);padding-block:0 40px;padding-left:max(16px
  .panel{max-height:none;overflow:visible}
 }
 </style>
-<style>@media(max-width:1100px){#cards,#leit{grid-template-columns:1fr 1fr!important}}@media(max-width:700px){#cards,#leit,#rec{grid-template-columns:1fr!important}}.ideal p b{font-weight:700}</style>
+<style>@media(max-width:1100px){#cards,#leit{grid-template-columns:1fr 1fr!important}}@media(max-width:700px){#cards,#leit{grid-template-columns:1fr!important}}.ideal p b{font-weight:700}</style>
 <header class="top"><svg class="lg"  viewBox="0 0 1218 292" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#clip0_120_13)">
 <path d="M366.939 257.613V251.218L376.171 247.439C383.741 244.13 385.636 241.529 385.636 234.428V118.732C385.636 111.632 383.741 108.794 376.171 105.721L366.939 101.942V95.548H490.441L493.043 133.874H486.649L479.314 122.04C471.272 109.5 468.435 107.604 457.555 107.604H410.482V173.376H446.676C453.776 173.376 456.613 171.246 459.686 163.909L463.701 154.455H469.847V206.262H463.701L459.921 196.09C456.613 187.564 453.776 185.446 446.676 185.446H410.482V234.415C410.482 240.809 412.612 243.399 421.125 246.955L431.769 251.218V257.613H366.939Z" fill="currentColor"/>
@@ -114,7 +114,7 @@ body{background:#fff;color:var(--ink);padding-block:0 40px;padding-left:max(16px
 </defs>
 </svg>
 <div class="tt"><h1>Simulador SalusPay</h1><div class="ey">Preparado pela Finscale para a SalusPay e a Indústria</div></div></header>
-<p class="sub">A holding coloca o dinheiro na SalusPay. A SalusPay paga a Indústria à vista e recebe da lavanderia a prazo, por CCB. Valores por pedido, antes de custos fixos.</p>
+<p class="sub">A holding aporta o dinheiro na série da SalusPay. A Indústria recebe o pedido cheio, à vista. A lavanderia paga a prazo, por CCB. Valores por pedido, antes de custos fixos.</p>
 <div class="wrap">
 <div class="panel">
   <h3>O pedido</h3>
@@ -129,13 +129,10 @@ body{background:#fff;color:var(--ink);padding-block:0 40px;padding-left:max(16px
   <label for="nmax">Prazo máximo (meses)</label><input id="nmax" type="number" min="1" max="12" value="6">
   <h3>Custo da bancarização</h3>
   <label for="ccb">Emissão da CCB (% do pedido)</label><input id="ccb" class="dec" type="text" inputmode="decimal" value="1,00" readonly style="background:#e4e4da;color:#6E6F57">
-  <div class="hint">Fixo pela Finscale.</div>
-  <h3>A Indústria recebe à vista</h3>
-  <label for="desc">Desconto cobrado da Indústria (%)</label><input id="desc" class="dec" type="text" inputmode="decimal" value="2,50">
-  <div class="hint">O preço de receber no dia, em vez de dar 28 dias de prazo como hoje.</div>
-  <h3>A holding financia a SalusPay</h3>
+  <div class="hint">Fixo pela Finscale. A holding aporta junto com o pedido.</div>
+  <h3>A holding financia</h3>
   <label for="cdin">Retorno pago à holding (% a.m.)</label><input id="cdin" class="dec" type="text" inputmode="decimal" value="1,25">
-  <div class="hint">A holding coloca o dinheiro que paga a Indústria e recebe esse retorno até a lavanderia quitar.</div>
+  <div class="hint">A holding aporta o pedido e a CCB, e recebe de volta em parcelas, com esse retorno, junto com a lavanderia.</div>
   <h3>Premissas de mercado</h3>
   <label for="cdi">CDI (% a.a.)</label><input id="cdi" class="dec" type="text" inputmode="decimal" value="13,65" readonly style="background:#e4e4da;color:#6E6F57">
   <div class="hint">Dado público: CDI de novembro de 2026 (Banco Central). Selic meta 13,75%.</div>
@@ -148,25 +145,28 @@ body{background:#fff;color:var(--ink);padding-block:0 40px;padding-left:max(16px
  <div class="tabs noprint"><button class="tb on" id="t1b" type="button">Simulador</button><button class="tb" id="t2b" type="button">Como funciona: o dinheiro e a receita de cada parte</button></div>
  <div id="t1">
   <div class="hero" id="sug" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr"></div>
+  <h2>O caminho do dinheiro</h2>
+  <div id="cam"></div>
   <h2>Quanto fica com cada um</h2>
   <div class="cards" id="cards" style="grid-template-columns:repeat(4,1fr)"></div>
-  <h2>A receita de cada um</h2>
-  <div class="cards" id="rec" style="grid-template-columns:repeat(3,1fr)"></div>
   <h2>O custo do capital, parte por parte</h2>
   <div class="sx" id="custo"></div>
   <h2>Escolha o prazo</h2>
   <div class="sx"><table class="prz" id="tab"></table></div>
   <p class="hint" style="margin-top:8px">Em verde, o menor prazo com parcela dentro da faixa. Clique em outra linha para comparar.</p>
+  <h2>Mês a mês</h2>
+  <div class="sx"><table class="prz" id="mes"></table></div>
   <h2>Leitura da operação</h2>
   <div class="leit" id="leit" style="grid-template-columns:repeat(4,1fr)"></div>
   <div class="ideal"><h4>Onde o dinheiro deve ficar</h4><div id="onde"></div></div>
-  <h2>Mês a mês</h2>
-  <div class="sx"><table class="prz" id="mes"></table></div>
  </div>
  <div id="t2" hidden>
-  <div class="ideal"><h4>Como o dinheiro anda</h4>
-   <p>1. A holding coloca o dinheiro na SalusPay, contrato a contrato. 2. A lavanderia assina a CCB e a SalusPay paga a Indústria à vista, com desconto. 3. A lavanderia paga as parcelas à SalusPay. 4. A SalusPay devolve o dinheiro à holding com o retorno combinado e fica com a diferença.</p>
-   <p>Dentro do grupo, o desconto da Indústria e o retorno da holding só trocam de bolso. O que entra de fora são os juros da lavanderia; o que sai é a emissão da CCB e o risco de inadimplência.</p>
+  <div class="ideal" style="margin-top:0"><h4>Como o dinheiro anda</h4>
+   <p>1. A holding aporta na série exclusiva da SalusPay, na securitizadora, o valor do pedido mais a emissão da CCB.</p>
+   <p>2. A lavanderia escolhe parcelar e assina a CCB pelo celular. A instituição regulada emite a CCB, recebe o custo da emissão e paga a Indústria à vista, pelo valor cheio do pedido.</p>
+   <p>3. A instituição cede a CCB à série da SalusPay. A partir daí, o crédito é da série.</p>
+   <p>4. Todo mês a lavanderia paga a parcela. A parcela se divide: a holding recebe a parte dela, com o retorno combinado, e a SalusPay fica com a diferença.</p>
+   <p>Para o grupo, o retorno da holding só troca de bolso. O que entra de fora são os juros da lavanderia. O que sai é a emissão da CCB e o risco de inadimplência.</p>
    <p>Prazo de 2 a 3 parcelas para a maioria dos pedidos; até 6 só para pedidos maiores e clientes com histórico.</p></div>
  </div>
 </div>
@@ -190,25 +190,36 @@ body{background:#fff;color:var(--ink);padding-block:0 40px;padding-left:max(16px
 </clipPath>
 </defs>
 </svg><span>Confidencial · Simulação ilustrativa, não é proposta de crédito · Finscale 2026</span></div></div>
+<style>
+.cam{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid #e2e2da}
+.cam div{padding:14px 14px 12px;border-right:1px solid #e2e2da;font-size:12.5px;color:var(--olive);position:relative}
+.cam div:last-child{border-right:0}
+.cam b{display:block;font-family:'Instrument Serif';font-weight:400;font-size:20px;color:var(--ink);margin-bottom:2px}
+.cam .q{display:block;font-family:'Instrument Serif';font-size:24px;color:var(--ink);margin:6px 0 2px}
+.cam .k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--olive);font-weight:700}
+.cam div.hi{background:var(--lime)}
+.cam2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border:1px solid #e2e2da;border-top:0}
+.cam2 div{padding:12px 14px;border-right:1px solid #e2e2da;font-size:12.5px;color:var(--olive)}.cam2 div:last-child{border-right:0}
+.cam2 b{display:block;font-family:'Instrument Serif';font-weight:400;font-size:22px;color:var(--ink)}
+@media(max-width:900px){.cam{grid-template-columns:1fr 1fr}.cam2{grid-template-columns:1fr}}
+</style>
 <script>
 const $=id=>document.getElementById(id);
 const num=s=>parseFloat(String(s).replace(/\./g,'').replace(',','.'))||0;
 const R=v=>(v<0?'− ':'')+'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 const PC=v=>v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const price=(A,r,n)=>r>0?A*r/(1-Math.pow(1+r,-n)):A/n;
 let sel=null;
-function sched(bal,r,pmt,n){let c=0;for(let k=0;k<n;k++){c+=bal*r;bal=bal*(1+r)-pmt}return c}
 function contrato(n,p){
- const i=p.tj/100,V=p.v,pmt=i>0?V*i/(1-Math.pow(1+i,-n)):V/n,tot=pmt*n,jur=tot-V,ccb=V*p.ccb/100,ip=Math.pow(1+p.ipca/100,1/12)-1,cdim=Math.pow(1+p.cdi/100,1/12)-1;
- const descv=V*p.desc/100,ind=V-descv,custo=sched(ind,p.cdin/100,pmt,n),cdiH=sched(ind,cdim,pmt,n);
- const fica=tot-ind-custo-ccb,holdX=custo-cdiH,hoje=V*cdim*28/30;
- const grp=fica+custo-cdiH-descv+descv-0+0; // desconto troca de bolso; holding recebe o retorno
- const grupo=jur-ccb-sched(V,cdim,pmt,n)+hoje;
- const real=fica/Math.pow(1+ip,(n+1)/2);
- return {n,pmt,tot,jur,ccb,ind,descv,custo,cdiH,holdX,fica,real,mes:fica/n,grupo,hoje,cdim};
+ const V=p.v,i=p.tj/100,cdim=Math.pow(1+p.cdi/100,1/12)-1,ip=Math.pow(1+p.ipca/100,1/12)-1;
+ const pmt=price(V,i,n),tot=pmt*n,jur=tot-V,ccb=V*p.ccb/100,A=V+ccb;
+ const pmtH=price(A,p.cdin/100,n),totH=pmtH*n,custo=totH-A,cdiH=price(A,cdim,n)*n-A,holdX=custo-cdiH;
+ const fica=tot-totH,hoje=V*cdim*28/30,grupo=jur-ccb-cdiH+hoje,real=fica/Math.pow(1+ip,(n+1)/2);
+ return {n,pmt,tot,jur,ccb,A,pmtH,totH,custo,cdiH,holdX,fica,hoje,grupo,real,cdim,mes:fica/n};
 }
 function calc(){
- const p={v:num($('v').value),tj:num($('tj').value),pmin:num($('pmin').value),pmax:num($('pmax').value),nmax:Math.max(1,Math.min(12,parseInt($('nmax').value)||6)),ccb:num($('ccb').value),cdin:num($('cdin').value),desc:num($('desc').value),cdi:num($('cdi').value),ipca:num($('ipca').value)};
-  const cdim=(Math.pow(1+p.cdi/100,1/12)-1)*100;
+ const p={v:num($('v').value),tj:num($('tj').value),pmin:num($('pmin').value),pmax:num($('pmax').value),nmax:Math.max(1,Math.min(12,parseInt($('nmax').value)||6)),ccb:num($('ccb').value),cdin:num($('cdin').value),cdi:num($('cdi').value),ipca:num($('ipca').value)};
+ const cdim=(Math.pow(1+p.cdi/100,1/12)-1)*100;
  $('refTxt').textContent=`Para comparar: hoje a lavanderia tem 28 dias sem custo. O dinheiro custa ${PC(cdim)}% a.m. (CDI).`;
  const rows=[];for(let n=1;n<=p.nmax;n++)rows.push(contrato(n,p));
  const inF=r=>r.pmt>=p.pmin-1e-9&&r.pmt<=p.pmax+1e-9;
@@ -216,46 +227,44 @@ function calc(){
  const c=rows.find(r=>r.n===sel)||sug;
  $('sug').innerHTML=`<div><div style="font-size:11px;letter-spacing:.12em;font-weight:700">${c===sug?'CONTRATO SUGERIDO':'CONTRATO ESCOLHIDO'}</div><div style="font-family:Instrument Serif;font-size:48px;line-height:1.05">${c.n}x de ${R(c.pmt)}</div><div style="font-size:13px">${c===sug?`o menor prazo com parcela entre ${R(p.pmin)} e ${R(p.pmax)}`:'clique na linha verde para voltar à sugestão'}</div></div>
  <div><div>Juros ao mês</div><b>${PC(p.tj)}% a.m.</b></div><div><div>Lavanderia paga no total</div><b>${R(c.tot)}</b></div><div><div>Fica na SalusPay</div><b>${R(c.fica)}</b></div><div><div>Ganho do grupo</div><b>${R(c.grupo)}</b></div>`;
+ $('cam').innerHTML=`<div class="cam">
+  <div><span class="k">Dia 0 · 1</span><b>Holding</b>aporta na série da SalusPay<span class="q">${R(c.A)}</span>pedido + CCB</div>
+  <div><span class="k">Dia 0 · 2</span><b>Securitizadora</b>série exclusiva da SalusPay<span class="q">${R(c.A)}</span>recebe o aporte e compra a CCB</div>
+  <div><span class="k">Dia 0 · 3</span><b>Instituição regulada</b>emite a CCB da lavanderia<span class="q">${R(c.ccb)}</span>fica com a emissão (${PC(p.ccb)}%)</div>
+  <div class="hi"><span class="k">Dia 0 · 4</span><b>Indústria</b>recebe o pedido cheio<span class="q">${R(p.v)}</span>à vista, sem desconto e sem risco</div>
+  <div><span class="k">Meses 1 a ${c.n}</span><b>Lavanderia</b>paga as parcelas à série<span class="q">${c.n}x ${R(c.pmt)}</span>${R(c.tot)} no total</div></div>
+  <div class="cam2"><div>Cada parcela se divide em<b>${R(c.pmt)}</b>paga pela lavanderia</div><div>Para a holding, todo mês<b>${R(c.pmtH)}</b>devolve ${R(c.A)} com ${PC(p.cdin)}% a.m.</div><div style="background:#D5DE45;color:#343933">Para a SalusPay, todo mês<b>${R(c.pmt-c.pmtH)}</b>${R(c.fica)} no contrato</div></div>`;
  $('cards').innerHTML=`<div class="card"><h4>Lavanderia</h4><div class="big">${R(c.pmt)}</div><div class="cap">por mês, fixa, por ${c.n} ${c.n>1?'meses':'mês'}</div><table><tr><td>Pedido</td><td>${R(p.v)}</td></tr><tr><td>Juros (${PC(p.tj)}% a.m.)</td><td>${R(c.jur)}</td></tr><tr class="tot"><td>Paga no total</td><td>${R(c.tot)}</td></tr></table></div>
- <div class="card"><h4>Indústria</h4><div class="big">${R(c.ind)}</div><div class="cap">à vista, no dia do pedido</div><table><tr><td>Valor do pedido</td><td>${R(p.v)}</td></tr><tr><td>Desconto (${PC(p.desc)}%)</td><td class="neg">${R(-c.descv)}</td></tr><tr class="tot"><td>Recebe no dia</td><td>${R(c.ind)}</td></tr><tr><td>Hoje: 28 dias de prazo custam, a CDI</td><td>${R(c.hoje)}</td></tr></table></div>
- <div class="card"><h4>Holding</h4><div class="big">${R(c.custo)}</div><div class="cap">de retorno sobre ${R(c.ind)} aplicados</div><table><tr><td>Coloca na SalusPay</td><td>${R(c.ind)}</td></tr><tr><td>Retorno (${PC(p.cdin)}% a.m.)</td><td>${R(c.custo)}</td></tr><tr><td>O mesmo dinheiro no CDI</td><td>${R(c.cdiH)}</td></tr><tr class="tot"><td>Ganha acima do CDI</td><td>${R(c.holdX)}</td></tr></table></div>
- <div class="card hi"><h4>SalusPay</h4><div class="big">${R(c.fica)}</div><div class="cap">${R(c.mes)} por mês, em média</div><table><tr><td>Juros da lavanderia</td><td>${R(c.jur)}</td></tr><tr><td>Desconto da Indústria</td><td>${R(c.descv)}</td></tr><tr><td>Retorno pago à holding</td><td class="neg">${R(-c.custo)}</td></tr><tr><td>Emissão da CCB (${PC(p.ccb)}%)</td><td class="neg">${R(-c.ccb)}</td></tr><tr class="tot"><td>Fica na SalusPay</td><td>${R(c.fica)}</td></tr></table></div>`;
- $('custo').innerHTML=`<table class="prz"><thead><tr><th>Quem</th><th>Custo do capital</th><th>Custo neste pedido</th><th>Leitura</th></tr></thead><tbody>
- <tr><td>Grupo (custo de oportunidade)</td><td>${PC(c.cdim*100)}% a.m. (CDI)</td><td>${R(c.cdiH)}</td><td>o que o dinheiro renderia parado</td></tr>
- <tr><td>Holding → SalusPay</td><td>${PC(p.cdin)}% a.m.</td><td>${R(c.custo)}</td><td>${R(c.holdX)} acima do CDI, fica no grupo</td></tr>
- <tr><td>SalusPay → Indústria</td><td>${PC(p.desc)}% uma vez</td><td>${R(c.descv)}</td><td>troca de bolso dentro do grupo</td></tr>
- <tr><td>Bancarização</td><td>${PC(p.ccb)}% uma vez</td><td>${R(c.ccb)}</td><td>único custo que sai do grupo</td></tr>
+ <div class="card"><h4>Indústria</h4><div class="big">${R(p.v)}</div><div class="cap">à vista, no dia do pedido</div><table><tr><td>Hoje: recebe em 28 dias</td><td>${R(p.v)}</td></tr><tr><td>Hoje: o prazo custa, a CDI</td><td class="neg">${R(-c.hoje)}</td></tr><tr class="tot"><td>Com a SalusPay: no dia</td><td>${R(p.v)}</td></tr><tr><td>Sem desconto e sem risco de atraso</td><td></td></tr></table></div>
+ <div class="card"><h4>Holding</h4><div class="big">${R(c.custo)}</div><div class="cap">de retorno sobre ${R(c.A)} aportados</div><table><tr><td>Aporta (pedido + CCB)</td><td>${R(c.A)}</td></tr><tr><td>Recebe de volta</td><td>${R(c.totH)}</td></tr><tr><td>Retorno (${PC(p.cdin)}% a.m.)</td><td>${R(c.custo)}</td></tr><tr><td>O mesmo dinheiro no CDI</td><td>${R(c.cdiH)}</td></tr><tr class="tot"><td>Ganha acima do CDI</td><td>${R(c.holdX)}</td></tr></table></div>
+ <div class="card hi"><h4>SalusPay</h4><div class="big">${R(c.fica)}</div><div class="cap">${R(c.mes)} por mês, todo mês</div><table><tr><td>Lavanderia paga</td><td>${R(c.tot)}</td></tr><tr><td>Devolve à holding</td><td class="neg">${R(-c.totH)}</td></tr><tr class="tot"><td>Fica na SalusPay</td><td>${R(c.fica)}</td></tr><tr><td><b>Ganho real</b>, sem a inflação</td><td><b>${R(c.real)}</b></td></tr></table></div>`;
+ $('custo').innerHTML=`<table class="prz"><thead><tr><th>Quem</th><th>Custo do capital</th><th>Neste pedido</th><th>Leitura</th></tr></thead><tbody>
  <tr><td>Lavanderia</td><td>${PC(p.tj)}% a.m.</td><td>${R(c.jur)}</td><td>a receita que entra de fora</td></tr>
- <tr class="sug"><td>Ganho do grupo</td><td></td><td>${R(c.grupo)}</td><td>juros − CCB − CDI do dinheiro + os 28 dias que hoje são de graça</td></tr></tbody></table>`;
- $('tab').innerHTML='<thead><tr><th>Parcelas</th><th>Parcela</th><th>Total pago</th><th>Juros</th><th>Fica na SalusPay</th></tr></thead><tbody>'+rows.map(r=>`<tr data-n="${r.n}" class="${r===sug?'sug':(!inF(r)?'out':'')} ${r===c&&r!==sug?'sel':''}"><td>${r.n}x${r===sug?'<span class="tag">sugerido</span>':''}</td><td>${R(r.pmt)}</td><td>${R(r.tot)}</td><td>${R(r.jur)}</td><td>${R(r.fica)}</td></tr>`).join('')+'</tbody>';
+ <tr><td>Holding → série da SalusPay</td><td>${PC(p.cdin)}% a.m.</td><td>${R(c.custo)}</td><td>${R(c.holdX)} acima do CDI; fica no grupo</td></tr>
+ <tr><td>Instituição regulada (CCB)</td><td>${PC(p.ccb)}% uma vez</td><td>${R(c.ccb)}</td><td>único custo que sai do grupo</td></tr>
+ <tr><td>Grupo (custo de oportunidade)</td><td>${PC(c.cdim*100)}% a.m. (CDI)</td><td>${R(c.cdiH)}</td><td>o que o dinheiro renderia parado</td></tr>
+ <tr><td>Indústria</td><td>zero</td><td>${R(0)}</td><td>recebe cheio; deixa de pagar ${R(c.hoje)} pelos 28 dias</td></tr>
+ <tr class="sug"><td>Ganho do grupo</td><td></td><td>${R(c.grupo)}</td><td>juros − CCB − CDI do dinheiro + os 28 dias de hoje</td></tr></tbody></table>`;
+ $('tab').innerHTML='<thead><tr><th>Parcelas</th><th>Parcela</th><th>Total pago</th><th>Juros</th><th>Para a holding/mês</th><th>Fica na SalusPay</th></tr></thead><tbody>'+rows.map(r=>`<tr data-n="${r.n}" class="${r===sug?'sug':(!inF(r)?'out':'')} ${r===c&&r!==sug?'sel':''}"><td>${r.n}x${r===sug?'<span class="tag">sugerido</span>':''}</td><td>${R(r.pmt)}</td><td>${R(r.tot)}</td><td>${R(r.jur)}</td><td>${R(r.pmtH)}</td><td>${R(r.fica)}</td></tr>`).join('')+'</tbody>';
  $('tab').querySelectorAll('tbody tr').forEach(tr=>tr.onclick=()=>{const n=+tr.dataset.n;sel=(n===sug.n)?null:n;calc()});
+ {let rws='';for(let k=1;k<=c.n;k++)rws+=`<tr><td>Mês ${k}</td><td>${R(c.pmt)}</td><td>—</td><td>—</td><td>${R(c.pmtH)}</td><td>${R(c.pmt-c.pmtH)}</td></tr>`;
+  $('mes').innerHTML=`<thead><tr><th>Quando</th><th>Lavanderia paga</th><th>Indústria recebe</th><th>Instituição (CCB)</th><th>Holding</th><th>SalusPay</th></tr></thead><tbody><tr><td>Dia 0</td><td>—</td><td>${R(p.v)}</td><td>${R(c.ccb)}</td><td>${R(-c.A)} (aporte)</td><td>${R(0)}</td></tr>${rws}<tr class="sug"><td>Total</td><td>${R(c.tot)}</td><td>${R(p.v)}</td><td>${R(c.ccb)}</td><td>${R(c.custo)} de retorno</td><td>${R(c.fica)}</td></tr></tbody>`}
  $('leit').innerHTML=[
   ['Lavanderia',`Compra hoje e paga em ${c.n} parcelas fixas de ${R(c.pmt)}, pelo WhatsApp.`,`Paga ${R(c.jur)} de juros. Os 28 dias sem custo continuam para quem não quiser parcelar.`],
-  ['Indústria',`Recebe ${R(c.ind)} no dia, sem cobrar e sem risco de atraso.`,`Paga ${R(c.descv)} de desconto. Hoje, dar 28 dias custa ${R(c.hoje)} a CDI, sem contar o atraso.`],
-  ['Holding',`Recebe ${PC(p.cdin)}% ao mês, ${R(c.holdX)} acima do CDI neste pedido.`,'O dinheiro fica aplicado até a lavanderia quitar e corre o risco da carteira.'],
-  ['SalusPay',`Fica com ${R(c.fica)} neste pedido.`,'Paga a holding e a CCB, e carrega a cobrança e a inadimplência.']
+  ['Indústria',`Recebe ${R(p.v)} no dia, sem desconto, sem cobrar e sem risco de atraso.`,'A decisão de dar prazo deixa de ser dela e passa a seguir a política de crédito.'],
+  ['Holding',`Recebe ${R(c.pmtH)} por mês, ${R(c.holdX)} acima do CDI neste pedido.`,`Deixa ${R(c.A)} aplicados até a última parcela e corre o risco da carteira.`],
+  ['SalusPay',`Fica com ${R(c.pmt-c.pmtH)} por mês, ${R(c.fica)} no contrato.`,'Carrega a cobrança e a inadimplência, e só ganha se a lavanderia pagar.']
  ].map(([t,g,a])=>`<div class="lc"><h4>${t}</h4><div class="g"><b class="t">Ganha</b>${g}</div><div class="p"><b class="t">Abre mão</b>${a}</div></div>`).join('');
-
- const ip=Math.pow(1+p.ipca/100,1/12)-1;
- $('rec').innerHTML=`<div class="card"><h4>Receita da Indústria</h4><div class="big">${R(c.ind)}</div><div class="cap">no dia do pedido</div><table><tr><td>Hoje: recebe em 28 dias</td><td>${R(p.v)}</td></tr><tr><td>Hoje: o prazo custa, a CDI</td><td class="neg">${R(-c.hoje)}</td></tr><tr><td>Com a SalusPay: desconto</td><td class="neg">${R(-c.descv)}</td></tr><tr class="tot"><td>Recebe à vista, sem risco</td><td>${R(c.ind)}</td></tr></table></div>
- <div class="card hi"><h4>Receita da SalusPay</h4><div class="big">${R(c.jur+c.descv)}</div><div class="cap">receita bruta do pedido</div><table><tr><td>Juros da lavanderia</td><td>${R(c.jur)}</td></tr><tr><td>Desconto da Indústria</td><td>${R(c.descv)}</td></tr><tr><td>Retorno pago à holding</td><td class="neg">${R(-c.custo)}</td></tr><tr><td>Emissão da CCB</td><td class="neg">${R(-c.ccb)}</td></tr><tr class="tot"><td>Resultado</td><td>${R(c.fica)}</td></tr><tr><td>Ganho real, sem a inflação</td><td>${R(c.real)}</td></tr></table></div>
- <div class="card"><h4>Receita do grupo</h4><div class="big">${R(c.grupo)}</div><div class="cap">Indústria, holding e SalusPay somadas</div><table><tr><td>Juros da lavanderia</td><td>${R(c.jur)}</td></tr><tr><td>Emissão da CCB</td><td class="neg">${R(-c.ccb)}</td></tr><tr><td>CDI do dinheiro do grupo</td><td class="neg">${R(-(c.jur-c.ccb+c.hoje-c.grupo))}</td></tr><tr><td>Fim dos 28 dias de graça</td><td>${R(c.hoje)}</td></tr><tr class="tot"><td>Ganho do grupo</td><td>${R(c.grupo)}</td></tr></table></div>`;
- $('onde').innerHTML=`<p><b style="color:#D5DE45">À vista, sempre, com o dinheiro da holding.</b> A Indústria recebe ${R(c.ind)} no dia e deixa de cobrar e de carregar o risco. O desconto de ${R(c.descv)} sai da Indústria e entra na SalusPay; o retorno de ${R(c.custo)} sai da SalusPay e entra na holding. Para o grupo, os dois só trocam de bolso.</p><p>O que muda o resultado do grupo é o juro da lavanderia contra o custo do dinheiro: ${PC(p.tj)}% ao mês contra ${PC(c.cdim*100)}% do CDI. Neste pedido, o grupo ganha ${R(c.grupo)}.</p><p><b style="color:#D5DE45">A confirmar com o contador.</b> Na SalusPay, o juro e o desconto são receita financeira: PIS/COFINS de 4,65% e IRPJ/CSLL sobre o lucro. O prejuízo da SalusPay não compensa o lucro da Indústria.</p>`;
- {let bal=c.ind,hb=0;const r=p.cdin/100;let rows='';let tL=0,tH=0,tS=0;
-  for(let k=1;k<=c.n;k++){const juroH=bal*r;let paga=Math.min(c.pmt,bal+juroH);bal=bal+juroH-paga;const sal=c.pmt-paga;tL+=c.pmt;tH+=paga;tS+=sal;
-   rows+=`<tr><td>Mês ${k}</td><td>${R(c.pmt)}</td><td>—</td><td>${R(paga)}</td><td>${R(sal)}</td></tr>`}
-  tS-=c.ccb;
-  $('mes').innerHTML=`<thead><tr><th>Mês</th><th>Lavanderia paga</th><th>Indústria recebe</th><th>Volta para a holding</th><th>Fica na SalusPay</th></tr></thead><tbody><tr><td>Dia 0</td><td>—</td><td>${R(c.ind)}</td><td>${R(-c.ind)} (aporte)</td><td>${R(-c.ccb)} (emissão da CCB)</td></tr>${rows}<tr class="sug"><td>Total</td><td>${R(tL)}</td><td>${R(c.ind)}</td><td>${R(tH-c.ind)} de retorno</td><td>${R(tS)}</td></tr></tbody>`;}
- $('regras').innerHTML=`<b>Como calculamos.</b> <span><b>Parcela.</b> Tabela Price: o pedido de ${R(p.v)} vira ${c.n} parcelas fixas de ${R(c.pmt)}, com juros de ${PC(p.tj)}% ao mês.</span> <span><b>Prazo sugerido.</b> O menor prazo, de 1 a ${p.nmax} meses, em que a parcela cabe entre ${R(p.pmin)} e ${R(p.pmax)}.</span> <span><b>Holding.</b> Coloca ${R(c.ind)} no dia e recebe ${PC(p.cdin)}% ao mês sobre o saldo até a última parcela: ${R(c.custo)}. No CDI, o mesmo dinheiro renderia ${R(c.cdiH)}.</span> <span><b>Bancarização.</b> ${PC(p.ccb)}% do pedido, uma vez: ${R(c.ccb)}.</span> <span><b>Ganho do grupo.</b> Juros da lavanderia, menos CCB, menos o CDI do dinheiro do grupo durante o prazo, mais o custo dos 28 dias que hoje a Indústria dá de graça.</span> <span><b>Fora da conta.</b> Custos fixos, impostos e inadimplência.</span>`;
+ $('onde').innerHTML=`<p><b style="color:#D5DE45">À vista, sempre, com o dinheiro da holding.</b> A Indústria recebe ${R(p.v)} no dia, sem desconto. A holding aporta ${R(c.A)} e recebe ${R(c.pmtH)} por mês. A SalusPay fica com a diferença de cada parcela.</p><p>O resultado do grupo depende do juro da lavanderia contra o custo do dinheiro: ${PC(p.tj)}% ao mês contra ${PC(c.cdim*100)}% do CDI. Neste pedido, o grupo ganha ${R(c.grupo)}. O retorno da holding só troca de bolso.</p><p><b style="color:#D5DE45">A confirmar com o contador.</b> Na SalusPay, o juro é receita financeira: PIS/COFINS de 4,65% e IRPJ/CSLL sobre o lucro. O prejuízo da SalusPay não compensa o lucro da Indústria.</p>`;
+ $('regras').innerHTML=`<b>Como calculamos.</b> <span><b>Parcela.</b> Tabela Price: o pedido de ${R(p.v)} vira ${c.n} parcelas fixas de ${R(c.pmt)}, com juros de ${PC(p.tj)}% ao mês.</span> <span><b>Prazo sugerido.</b> O menor prazo, de 1 a ${p.nmax} meses, em que a parcela cabe entre ${R(p.pmin)} e ${R(p.pmax)}.</span> <span><b>Holding.</b> Aporta ${R(c.A)} (pedido mais CCB) e recebe ${c.n} parcelas de ${R(c.pmtH)}, também pela Tabela Price, a ${PC(p.cdin)}% ao mês. No CDI, o mesmo dinheiro renderia ${R(c.cdiH)}.</span> <span><b>SalusPay.</b> Fica com a diferença entre a parcela da lavanderia e a da holding: ${R(c.pmt-c.pmtH)} por mês.</span> <span><b>Bancarização.</b> ${PC(p.ccb)}% do pedido, uma vez, paga à instituição regulada: ${R(c.ccb)}.</span> <span><b>Ganho do grupo.</b> Juros da lavanderia, menos CCB, menos o CDI do dinheiro aportado, mais o custo dos 28 dias que hoje a Indústria dá de graça.</span> <span><b>Fora da conta.</b> Custos fixos, impostos e inadimplência.</span>`;
 }
-document.querySelectorAll('.panel input,.panel select').forEach(e=>e.addEventListener('input',()=>{sel=null;calc()}));
+document.querySelectorAll('.panel input').forEach(e=>e.addEventListener('input',()=>{sel=null;calc()}));
 $('t1b').onclick=()=>{$('t1').hidden=false;$('t2').hidden=true;$('t1b').classList.add('on');$('t2b').classList.remove('on')};
 $('t2b').onclick=()=>{$('t1').hidden=true;$('t2').hidden=false;$('t2b').classList.add('on');$('t1b').classList.remove('on')};
-
 const KEY='saluspay_sims';
 function lerSalvas(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return []}}
 function mostrarSalvas(){const l=lerSalvas();$('salvas').innerHTML=l.map((x,i)=>`<button type="button" data-i="${i}">${x.nome}</button>`).join('');$('salvas').querySelectorAll('button').forEach(b=>b.onclick=()=>{const x=lerSalvas()[+b.dataset.i];Object.keys(x.v).forEach(k=>{if($(k))$(k).value=x.v[k]});sel=null;calc()})}
-$('btnSalvar').onclick=()=>{const v={};['v','tj','pmin','pmax','nmax','desc','cdin'].forEach(k=>v[k]=$(k).value);const nome=`${v.v} · ${v.tj}% · ${new Date().toLocaleDateString('pt-BR')}`;try{const l=lerSalvas();l.unshift({nome,v});localStorage.setItem(KEY,JSON.stringify(l.slice(0,8)))}catch(e){}mostrarSalvas()};
+$('btnSalvar').onclick=()=>{const v={};['v','tj','pmin','pmax','nmax','cdin'].forEach(k=>v[k]=$(k).value);const nome=`${v.v} · ${v.tj}% · ${new Date().toLocaleDateString('pt-BR')}`;try{const l=lerSalvas();l.unshift({nome,v});localStorage.setItem(KEY,JSON.stringify(l.slice(0,8)))}catch(e){}mostrarSalvas()};
 mostrarSalvas();
 calc();
 </script>
